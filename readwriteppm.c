@@ -44,7 +44,7 @@ buffer, width, height, and the max value in the image. */
     printf("%s is not a PPM file!\n",file); 
     exit(0);
   }
-  printf("%s is a PPM file\n", file);
+  //printf("%s is a PPM file\n", file);
   n = fscanf(fd, "%c",&c);
   while(c == '#') 
   {
@@ -56,7 +56,7 @@ buffer, width, height, and the max value in the image. */
   n = fscanf(fd, "%d %d %d", width, height, max);
   assert(n==3);
 
-  printf("%d x %d image, max value= %d\n", *width, *height, *max);
+  //printf("%d x %d image, max value= %d\n", *width, *height, *max);
 // size of image
   int size = *width*(*height);
 
