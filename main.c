@@ -15,13 +15,27 @@ int main(int argc, char** argv)
 				msglength;
 	long int 	offset;
 
-	int 		n = atoi(argv[3]);
 
 	MPI_Init(&argc, &argv);
 
 	MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
 
 	MPI_Comm_size(MPI_COMM_WORLD, &p);
+
+	//check if correct input
+	if (  (argc != 5) || (atoi(argv[3])==0) || (atoi(argv[3]) % 2 != 1) || ((argv[4][0] != 'M') && (argv[4][0] != 'A'))  )
+	{
+		if (my_rank==0) printf("\nUsage: ./ppmf inputfile outputfile windowsize filtertype\
+			windowsize must be an odd number > 0\nfiltertype: A - average. M - median\n\n");
+		MPI_Finalize();
+		return 0;
+	}
+
+	int 		n = atoi(argv[3]);
+	int 		filtertype = 0;
+
+	if (argv[4][0] == 'M') filtertype = 1;
+
 
 	if (my_rank == 0){
 		RGB *image;
@@ -68,12 +82,14 @@ int main(int argc, char** argv)
 			}
 		}
 
+		//when only one process, don't need an offset
 		if (p == 1) msgoffset = 0 ;
-		//process first section
-		processImage(width, (my_height[0]+msgoffset), image, n);
+
+
+		processImage(width, (my_height[0]+msgoffset), image, n, filtertype);
+		
 
 		//receive from processes
-		
 		for (int i=1; i<p; i++){
 			msglength = my_width * my_height[i];
 
@@ -109,8 +125,9 @@ int main(int argc, char** argv)
 		MPI_Recv(image1, (msglength)*3, MPI_CHAR, source, 1, MPI_COMM_WORLD, &status);
 
 
+		processImage(my_width, hh + msgoffset, image1, n, filtertype);
+		
 
-		processImage(my_width, hh + msgoffset, image1, n);
 
 		msglength = hh * my_width;
 

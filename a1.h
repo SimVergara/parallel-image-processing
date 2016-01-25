@@ -8,7 +8,7 @@ typedef struct {
 RGB * readPPM(char* file, int* width, int* height, int* max);
 void writePPM(char* file, int width, int height, int max, const RGB *image);
 
-void processImage(int width, int height, RGB *image, int n);
+void processImage(int width, int height, RGB *image, int n, int filtertype);
 
 
 #endif
