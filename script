@@ -1,12 +1,5 @@
-#mpirun -np 2 ./ppmf photo.ppm out.ppm
-#echo "2 DONE"
-mpirun -np 3 ./ppmf photo.ppm out.ppm
-#echo "3 DONE"
-#mpirun -np 4 ./ppmf photo.ppm out.ppm
-#echo "4 DONE"
-#mpirun -np 5 ./ppmf photo.ppm out.ppm
-#echo "5 DONE"
-#mpirun -np 6 ./ppmf photo.ppm out.ppm
-#echo "6 DONE"
-#mpirun -np 7 ./ppmf photo.ppm out.ppm
-#echo "7 DONE"
+mpirun -np 1 ./ppmf photo.ppm 1a.ppm 15 A
+mpirun -np 4 ./ppmf photo.ppm 2a.ppm 15 A
+
+mpirun -np 1 ./ppmf photo.ppm 1m.ppm 15 M
+mpirun -np 4 ./ppmf photo.ppm 2m.ppm 15 M

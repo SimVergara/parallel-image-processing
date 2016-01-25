@@ -10,5 +10,6 @@ void writePPM(char* file, int width, int height, int max, const RGB *image);
 
 void processImage(int width, int height, RGB *image, int n, int filtertype);
 
+void q_sort(int numbers[10], int left, int right);
 
 #endif
