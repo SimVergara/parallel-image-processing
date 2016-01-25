@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void processImage(int width, int height, RGB *image, int my_rank)
+void processImage(int width, int height, RGB *image, int n)
 {
     double  sumr = 0,//sum of all the RGB values in the pane
             sumb = 0,
@@ -16,7 +16,6 @@ void processImage(int width, int height, RGB *image, int my_rank)
     int my_end = width*height;
 
     int myrow;
-    int n = 5;
 
     RGB *out = (RGB*)malloc(my_end*sizeof(RGB));
 
@@ -35,7 +34,7 @@ void processImage(int width, int height, RGB *image, int my_rank)
             myrow = (i-y*width)/width;
             for (int x = (n/2); x > ((n/2)-n) ; x--)
             {//loop within rows
-                if (((i-y*width - x) <= 0) || ((i-y*width - x) >= my_end)) continue;
+                if (((i-y*width - x) < 0) || ((i-y*width - x) >= my_end)) continue;
 
                 int testrow = (i-y*width - x)/width;
 
@@ -70,7 +69,8 @@ void processImage(int width, int height, RGB *image, int my_rank)
         last->b = temp->b;
      }
 
-
+    free(out);
+    
 
 }
 

@@ -2,6 +2,7 @@
 #include "a1.h"
 #include "mpi.h"
 #include <string.h>
+#include <stdio.h>
 
 int main(int argc, char** argv)
 {
@@ -14,6 +15,8 @@ int main(int argc, char** argv)
 				msglength;
 	long int 	offset;
 
+	int 		n = atoi(argv[3]);
+
 	MPI_Init(&argc, &argv);
 
 	MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
@@ -25,9 +28,12 @@ int main(int argc, char** argv)
 
 		int width, height, max;
 
+
 		//reads photo
 		image = readPPM(argv[1], &width, &height, &max);
 
+		int procoffset = (n/2)*width;
+		int msgoffset = (n/2)*2;
 
 		my_width = width;
 
@@ -38,26 +44,33 @@ int main(int argc, char** argv)
 
 			my_height[i] = height/p;
 			if (i < height%p) my_height[i]++;
-		
-			msglength = my_width * my_height[i];
 			
 			if (i>0){
+
+				if (i==(p-1)) msgoffset = n/2;
+				msglength = my_width * (my_height[i] + msgoffset);
+
 				offset = 0;
 				for (int j=0; j<i;j++){
 					offset += width * my_height[j];	
 				}
-/*printf("P%d: sending    image of W%d H%d 	size %d to P%d\n", my_rank, my_width,
-														my_height[i], msglength, i);
-*/				
+				
 				MPI_Send(&my_width, sizeof(int), MPI_CHAR, i, 1, MPI_COMM_WORLD);
 				MPI_Send(&my_height[i], sizeof(int), MPI_CHAR, i, 1, MPI_COMM_WORLD);
 				
-				MPI_Send(image+offset, msglength*3, MPI_CHAR, i, 1, MPI_COMM_WORLD);
 
+				MPI_Send(image + offset - procoffset, 
+						 (msglength)*3, 
+						 MPI_CHAR, 
+						 i, 
+						 1, 
+						 MPI_COMM_WORLD);
 			}
 		}
+
+		if (p == 1) msgoffset = 0 ;
 		//process first section
-		processImage(width, (my_height[0]), image, my_rank);
+		processImage(width, (my_height[0]+msgoffset), image, n);
 
 		//receive from processes
 		
@@ -83,24 +96,30 @@ int main(int argc, char** argv)
 		source = 0;
 		MPI_Recv(&my_width, sizeof(int), MPI_CHAR, source, 1, MPI_COMM_WORLD, &status);
 		MPI_Recv(&my_height, sizeof(int), MPI_CHAR, source, 1, MPI_COMM_WORLD, &status);
-		
+
+		int procoffset = (n/2)*my_width;
+		int msgoffset = (n/2)*2;
+
+		if (my_rank==(p-1)) msgoffset = n/2;
+
 		int hh = my_height;
-		int msglength = hh * my_width;
+		int msglength = (hh + msgoffset) * my_width;
 		RGB *image1 = (RGB*)malloc(msglength*sizeof(RGB));
-		MPI_Recv(image1, msglength*3, MPI_CHAR, source, 1, MPI_COMM_WORLD, &status);
 
-/*printf("P%d: processing image of W%d H%d 	size %d\n", my_rank, my_width,
-														my_height, msglength);
-*/
+		MPI_Recv(image1, (msglength)*3, MPI_CHAR, source, 1, MPI_COMM_WORLD, &status);
 
-		processImage(my_width, hh, image1, my_rank);
 
-		MPI_Send(image1, msglength*3, MPI_CHAR, 0, 0, MPI_COMM_WORLD);		
 
+		processImage(my_width, hh + msgoffset, image1, n);
+
+		msglength = hh * my_width;
+
+		MPI_Send(image1 + procoffset, msglength*3, MPI_CHAR, 0, 0, MPI_COMM_WORLD);		
+
+		free(image1);
 	}
 
 
-//printf("P%d finished\n", my_rank);
 	MPI_Finalize();
 
 	return 0;
