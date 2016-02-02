@@ -143,9 +143,3 @@ int main(int argc, char** argv)
 }
 
 
-
-/*
-for splitting the image;
-
-myh = height/p + i < height%p ? 1 : 0;
-*/

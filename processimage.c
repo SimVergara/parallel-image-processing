@@ -25,6 +25,12 @@ void processImage(int width, int height, RGB *image, int n, int filtertype)
 
     RGB *out = (RGB*)malloc(my_end*sizeof(RGB));
 
+    if (n<2)
+    {
+        return;
+    }
+
+
     for (int i = my_start; i < my_end; i++)
     {//loops through each pixel
         panecount = 0;
